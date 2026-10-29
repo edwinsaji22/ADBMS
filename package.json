@@ -1,0 +1,16 @@
+{
+  "name": "drrms-disaster-relief-resource-management",
+  "version": "1.0.0",
+  "description": "Disaster Relief Resource Management System (DRRMS) for ADBMS Project",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.3",
+    "mysql2": "^3.24.5"
+  }
+}

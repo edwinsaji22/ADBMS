@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Disaster Resource Recovery Management System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* Dark Theme */
+    body.theme-dark {
+      background-color: #030712;
+      color: #F3F4F6;
+    }
+    body.theme-dark .app-container {
+      background-color: #111827;
+      border-color: #1F2937;
+    }
+    body.theme-dark .ui-card {
+      background-color: #1F2937;
+      border-color: #374151;
+      color: #F9FAFB;
+    }
+    body.theme-dark .ui-subcard {
+      background-color: #111827;
+      border-color: #374151;
+    }
+    body.theme-dark .ui-input {
+      background-color: #111827 !important;
+      border-color: #374151 !important;
+      color: #F9FAFB !important;
+    }
+    body.theme-dark .bar-bg {
+      background-color: #111827;
+      border-color: #1F2937;
+    }
+    body.theme-dark .text-muted {
+      color: #9CA3AF;
+    }
+    body.theme-dark .btn-secondary {
+      background-color: #1F2937;
+      border-color: #374151;
+      color: #E5E7EB;
+    }
+
+    /* Light Theme (White) */
+    body.theme-light {
+      background-color: #F3F4F6;
+      color: #111827;
+    }
+    body.theme-light .app-container {
+      background-color: #FFFFFF;
+      border-color: #E5E7EB;
+    }
+    body.theme-light .ui-card {
+      background-color: #FFFFFF;
+      border-color: #E5E7EB;
+      color: #111827;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    body.theme-light .ui-subcard {
+      background-color: #F9FAFB;
+      border-color: #E5E7EB;
+    }
+    body.theme-light .ui-input {
+      background-color: #FFFFFF !important;
+      border-color: #D1D5DB !important;
+      color: #111827 !important;
+    }
+    body.theme-light .bar-bg {
+      background-color: #FFFFFF;
+      border-color: #E5E7EB;
+    }
+    body.theme-light .text-muted {
+      color: #6B7280;
+    }
+    body.theme-light .btn-secondary {
+      background-color: #F3F4F6;
+      border-color: #E5E7EB;
+      color: #1F2937;
+    }
+
+    /* Sticky Top Tab Bar */
+    .top-tab-bar {
+      display: flex;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .top-tab-bar::-webkit-scrollbar {
+      display: none;
+    }
+    .nav-tab-btn {
+      flex: 1 0 auto;
+      padding: 10px 14px;
+      font-size: 11px;
+      font-weight: 600;
+      text-align: center;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+    }
+    body.theme-dark .nav-tab-btn { color: #9CA3AF; }
+    body.theme-dark .nav-tab-btn.active { color: #3B82F6; border-bottom: 2px solid #3B82F6; font-weight: 700; }
+    
+    body.theme-light .nav-tab-btn { color: #6B7280; }
+    body.theme-light .nav-tab-btn.active { color: #2563EB; border-bottom: 2px solid #2563EB; font-weight: 700; }
+
+    button:active {
+      transform: scale(0.98);
+    }
+  </style>
+</head>
+<body class="theme-dark min-h-screen flex justify-center">
+
+  <!-- ================= MOBILE APP FRAME ================= -->
+  <div class="app-container w-full max-w-md min-h-screen flex flex-col border-x relative shadow-xl">
+
+    <!-- ================= 1. USER LOGIN SCREEN ================= -->
+    <div id="loginScreen" class="min-h-screen flex flex-col justify-between p-5">
+      <div class="flex items-center justify-between">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-muted">User Login</span>
+        </div>
+        <button onclick="toggleTheme()" class="btn-secondary border text-xs px-2.5 py-1 rounded-lg font-medium">
+          <span id="themeLabelLogin">Light Theme</span>
+        </button>
+      </div>
+
+      <div class="my-auto py-6 space-y-4">
+        <div>
+          <h1 class="text-xl font-bold tracking-tight">Disaster Resource Recovery Management System</h1>
+          <p class="text-xs text-muted mt-1">Select your user role and log in</p>
+        </div>
+
+        <div id="logoutBanner" class="hidden p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs font-medium">
+          Logged out successfully.
+        </div>
+
+        <form onsubmit="handleUserLogin(event)" class="ui-card border rounded-xl p-4 space-y-3.5">
+          <div>
+            <label class="block text-xs font-semibold mb-1">Your Full Name</label>
+            <input id="loginName" required placeholder="Enter your full name" class="ui-input w-full rounded-lg px-3 py-2 text-xs" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold mb-1">Mobile Number / User ID</label>
+            <input id="loginPhone" required placeholder="Enter mobile or user ID" class="ui-input w-full rounded-lg px-3 py-2 text-xs" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold mb-1">Select User Type</label>
+            <select id="loginRole" class="ui-input w-full rounded-lg px-3 py-2 text-xs">
+              <option value="Donor">Donor (Donate supplies & inventory to shelters)</option>
+              <option value="Citizen" selected>Citizen (Report disasters & request relief aid)</option>
+              <option value="Volunteer">Volunteer (Deliver supplies & fulfill requests)</option>
+              <option value="Coordinator">Coordinator (System Admin - full management)</option>
+            </select>
+          </div>
+
+          <button id="btnLoginSubmit" type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-xs uppercase tracking-wider transition">
+            Log In as User
+          </button>
+        </form>
+      </div>
+
+      <div class="text-[11px] text-muted text-center pt-4 border-t border-slate-800">
+        Disaster Resource Recovery Management System
+      </div>
+    </div>
+
+    <!-- ================= 2. MAIN APPLICATION SCREEN ================= -->
+    <div id="appScreen" class="hidden min-h-screen flex flex-col">
+
+      <!-- TOP APP HEADER -->
+      <header class="bar-bg border-b px-4 py-3 sticky top-0 z-30 flex items-center justify-between">
+        <div>
+          <div class="text-xs font-bold uppercase tracking-wider leading-none">DRRMS</div>
+          <div class="text-[10px] text-muted mt-0.5">Disaster Resource Recovery</div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <!-- Theme Switcher -->
+          <button onclick="toggleTheme()" class="btn-secondary border text-[11px] px-2 py-1 rounded-lg font-medium">
+            <span id="themeLabelApp">Light</span>
+          </button>
+
+          <!-- Current Logged In User Info & Role Switcher -->
+          <div class="flex items-center gap-1.5 pl-2 border-l border-slate-700">
+            <div class="text-right">
+              <div id="currentUserName" class="text-xs font-bold leading-tight truncate max-w-[85px]">User</div>
+              <!-- Role Switcher -->
+              <select id="roleSwitcher" onchange="switchRole(this.value)" class="text-[10px] text-blue-500 font-bold bg-transparent border-0 cursor-pointer p-0 leading-tight focus:outline-none">
+                <option value="Donor">Donor</option>
+                <option value="Citizen">Citizen</option>
+                <option value="Volunteer">Volunteer</option>
+                <option value="Coordinator">Coordinator</option>
+              </select>
+            </div>
+            <!-- Log Out Button -->
+            <button onclick="logout()" class="px-2 py-1 text-xs text-rose-500 hover:text-rose-400 font-bold ml-1 rounded">
+              Log Out
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- DYNAMIC ROLE TABS BAR (AUTOMATICALLY ADAPTS TO USER ROLE) -->
+      <nav id="dynamicTabBar" class="bar-bg border-b sticky top-[49px] z-20 top-tab-bar"></nav>
+
+      <!-- DATABASE CLEAR & SQL LOG BAR -->
+      <div class="bar-bg border-b px-3 py-1.5 text-[10px] mono flex justify-between items-center">
+        <span id="sqlCommand" class="truncate mr-2 text-emerald-400">MySQL Database Connected</span>
+        <div class="flex items-center gap-2 shrink-0 font-sans">
+          <button id="btnSeedData" onclick="seedSampleData()" class="text-emerald-400 hover:text-emerald-300 text-[10px] font-semibold" title="Load sample records">Load Sample Data</button>
+          <span class="text-slate-600">|</span>
+          <button id="btnClearData" onclick="clearAllData()" class="text-rose-400 hover:text-rose-300 text-[10px] font-semibold" title="Wipe all data to start clean">Clear All</button>
+          <span class="text-slate-600">|</span>
+          <button id="btnRefreshData" onclick="loadAll()" class="text-blue-500 text-[10px] font-semibold">Refresh</button>
+        </div>
+      </div>
+
+      <!-- TOAST MESSAGE -->
+      <div id="toast" class="fixed top-12 left-1/2 -translate-x-1/2 z-50 transform -translate-y-16 opacity-0 transition-all duration-200 pointer-events-none w-11/12 max-w-sm">
+        <div id="toastInner" class="bg-emerald-600 text-white px-3.5 py-2 rounded-xl text-xs font-semibold shadow-lg text-center">
+          <span id="toastText">Saved successfully</span>
+        </div>
+      </div>
+
+      <!-- MAIN CONTENT CONTAINER -->
+      <main class="flex-1 p-3.5 space-y-4 pb-12 overflow-y-auto">
+
+        <!-- ======================================================== -->
+        <!-- USER ROLE SECTION 1: DONOR VIEW                          -->
+        <!-- ======================================================== -->
+        <div id="role-container-donor" class="space-y-3">
+          
+          <!-- TAB: DONOR DONATE -->
+          <div id="panel-donor-donate" class="space-y-3">
+            <!-- Dedicated Donation Form -->
+            <div class="ui-card border p-3.5 rounded-xl space-y-2.5">
+              <div class="flex justify-between items-center">
+                <h3 class="text-xs font-bold uppercase tracking-wider">Donate Supplies to Shelter</h3>
+                <span class="text-[10px] text-emerald-500 font-semibold">Donor Portal</span>
+              </div>
+              <p class="text-[11px] text-muted">Select the shelter and supplies you wish to contribute:</p>
+              
+              <div class="space-y-2 text-xs">
+                <div>
+                  <label class="block text-[10px] text-muted uppercase font-bold mb-1">Target Safe Shelter</label>
+                  <select id="dnShelterSelect" class="ui-input w-full rounded-lg px-3 py-2"></select>
+                </div>
+                
+                <div>
+                  <label class="block text-[10px] text-muted uppercase font-bold mb-1">Resource Item Name</label>
+                  <input id="dnItemName" placeholder="e.g. Drinking Water, Rice, Baby Food, Blankets" onkeydown="if(event.key==='Enter') submitDonorContribution()" class="ui-input w-full rounded-lg px-3 py-2" />
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="block text-[10px] text-muted uppercase font-bold mb-1">Quantity</label>
+                    <input id="dnItemQty" type="number" placeholder="e.g. 500" onkeydown="if(event.key==='Enter') submitDonorContribution()" class="ui-input w-full rounded-lg px-3 py-2" />
+                  </div>
+                  <div>
+                    <label class="block text-[10px] text-muted uppercase font-bold mb-1">Unit</label>
+                    <input id="dnItemUnit" placeholder="e.g. Litres, Packets, Boxes" onkeydown="if(event.key==='Enter') submitDonorContribution()" class="ui-input w-full rounded-lg px-3 py-2" />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-700/40">
+                  <div>
+                    <label class="block text-[10px] text-muted uppercase font-bold mb-1">Donor Name / Org</label>
+                    <input id="dnDonorNameInput" placeholder="Your name or organization" class="ui-input w-full rounded-lg px-3 py-2" />
+                  </div>
+                  <div>
+                    <label class="block text-[10px] text-muted uppercase font-bold mb-1">Donor Category</label>
+                    <select id="dnDonorTypeInput" class="ui-input w-full rounded-lg px-3 py-2">
+                      <option value="Individual">Individual</option>
+                      <option value="NGO">NGO</option>
+                      <option value="Corporate">Corporate</option>
+                      <option value="Government">Government</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div id="dnContributeMsg" class="hidden p-2 rounded-lg text-xs font-semibold"></div>
+                <button id="btnSubmitDonation" onclick="submitDonorContribution()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-xs uppercase tracking-wider transition">
+                  Confirm & Stock Donation
+                </button>
+              </div>
+            </div>
+
+            <!-- Urgent Shelter Demands for Donors to Help -->
+            <div class="ui-card border p-3.5 rounded-xl space-y-2">
+              <div class="flex justify-between items-center">
+                <h4 class="text-xs font-bold uppercase tracking-wider">Urgent Shelter Demands</h4>
+                <span class="text-[10px] text-amber-500 font-semibold">Pending Requests</span>
+              </div>
+              <p class="text-[11px] text-muted">Shelters waiting for aid. Tap any item to pre-fill your donation:</p>
+              <div id="donorUrgentRequestsList" class="space-y-2"></div>
+            </div>
+          </div>
+
+          <!-- TAB: DONOR INVENTORY & MY CONTRIBUTIONS -->
+          <div id="panel-donor-history" class="hidden space-y-3">
+            <div class="space-y-2">
+              <h4 class="text-xs font-bold text-muted uppercase tracking-wider px-1">All Stocked Relief Supplies</h4>
+              <div id="donorInventoryList" class="space-y-2"></div>
+            </div>
+          </div>
+
+          <!-- TAB: DONOR SHELTER SUMMARY VIEW -->
+          <div id="panel-donor-summary" class="hidden space-y-3">
+            <div class="ui-card border p-3.5 rounded-xl space-y-2">
+              <div class="flex justify-between items-center">
+                <h3 class="text-xs font-bold uppercase tracking-wider">Shelter Supplies Stock Summary</h3>
+                <span class="text-[10px] text-blue-500 font-semibold">Live Database View</span>
+              </div>
+              <div id="donorSummaryList" class="space-y-2"></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ======================================================== -->
+        <!-- USER ROLE SECTION 2: CITIZEN VIEW                        -->
+        <!-- ======================================================== -->
+        <div id="role-container-citizen" class="hidden space-y-3">
+          
+          <!-- TAB: CITIZEN REPORT DISASTER -->
+          <div id="panel-citizen-report" class="space-y-3">
+            <div class="ui-card border p-3.5 rounded-xl space-y-2.5">
+              <h3 class="text-xs font-bold uppercase tracking-wider">Report Disaster in Your Locality</h3>
+              <div class="space-y-2 text-xs">
+                <input id="ctDisasterType" placeholder="Disaster Type (e.g. Flash Flood, Landslide)" onkeydown="if(event.key==='Enter') citizenReportDisaster()" class="ui-input w-full rounded-lg px-3 py-2" />
+                <input id="ctDisasterLoc" placeholder="Location / Affected Village / District" onkeydown="if(event.key==='Enter') citizenReportDisaster()" class="ui-input w-full rounded-lg px-3 py-2" />
+                <div class="grid grid-cols-2 gap-2">
+                  <input id="ctDisasterDate" type="date" class="ui-input w-full rounded-lg px-3 py-2" />
+                  <select id="ctDisasterSev" class="ui-input w-full rounded-lg px-3 py-2">
+                    <option value="Critical">Critical</option>
+                    <option value="High" selected>High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </div>
+                <div id="ctDisasterMsg" class="hidden p-2 rounded-lg text-xs font-semibold"></div>
+                <button id="btnCtReport" onclick="citizenReportDisaster()" class="w-full py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg font-bold text-xs transition">
+                  Submit Disaster Incident
+                </button>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <h4 class="text-xs font-bold text-muted uppercase tracking-wider px-1">Active Incident Alerts</h4>
+              <div id="citizenDisasterList" class="space-y-2"></div>
+            </div>
+          </div>
+
+          <!-- TAB: CITIZEN FIND SHELTERS -->
+          <div id="panel-citizen-shelters" class="hidden space-y-3">
+            <div class="space-y-2">
+              <h4 class="text-xs font-bold text-muted uppercase tracking-wider px-1">Nearby Safe Shelters & Occupancy</h4>
+              <div id="citizenShelterList" class="space-y-2"></div>
+            </div>
+          </div>
+
+          <!-- TAB: CITIZEN REQUEST AID -->
+          <div id="panel-citizen-request" class="hidden space-y-3">
+            <div class="ui-card border p-3.5 rounded-xl space-y-2.5">
+              <h3 class="text-xs font-bold uppercase tracking-wider">Raise Emergency Relief Request</h3>
+              <p class="text-[11px] text-muted">Request essential relief supplies from your nearest shelter:</p>
+              <div class="space-y-2 text-xs">
+                <select id="ctReqShelter" class="ui-input w-full rounded-lg px-3 py-2"></select>
+                <input id="ctReqItem" placeholder="Resource Item Needed (e.g. Blankets, Medicine, Food)" onkeydown="if(event.key==='Enter') citizenRaiseRequest()" class="ui-input w-full rounded-lg px-3 py-2" />
+                <div class="grid grid-cols-2 gap-2">
+                  <input id="ctReqQty" type="number" placeholder="Quantity Needed" onkeydown="if(event.key==='Enter') citizenRaiseRequest()" class="ui-input w-full rounded-lg px-3 py-2" />
+                  <input id="ctReqRemarks" placeholder="Priority / Remarks" onkeydown="if(event.key==='Enter') citizenRaiseRequest()" class="ui-input w-full rounded-lg px-3 py-2" />
+                </div>
+                <div id="ctReqMsg" class="hidden p-2 rounded-lg text-xs font-semibold"></div>
+                <button id="btnCtRequest" onclick="citizenRaiseRequest()" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold text-xs transition">
+                  Submit Emergency Request
+                </button>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <h4 class="text-xs font-bold text-muted uppercase tracking-wider px-1">My Relief Requests & Status</h4>
+              <div id="citizenMyRequestsList" class="space-y-2"></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ======================================================== -->
+        <!-- USER ROLE SECTION 3: VOLUNTEER VIEW                      -->
+        <!-- ======================================================== -->
+        <div id="role-container-volunteer" class="hidden space-y-3">
+          
+          <!-- TAB: VOLUNTEER DELIVERIES (ACID TRANSACTION) -->
+          <div id="panel-vol-dispatch" class="space-y-3">
+            <div class="ui-card border p-3.5 rounded-xl space-y-2.5">
+              <div class="flex justify-between items-center">
+                <h3 class="text-xs font-bold uppercase tracking-wider">Deliver Supplies to Victims</h3>
+                <span class="text-[10px] text-emerald-500 font-semibold">ACID Transaction</span>
+              </div>
+              <p class="text-[11px] text-muted">Dispatches deduct shelter stock via MySQL Stored Procedure:</p>
+              <div class="space-y-2 text-xs">
+                <div>
+                  <label class="block text-[10px] text-muted uppercase font-bold mb-1">Available Resource Stock</label>
+                  <select id="vlResourceSelect" class="ui-input w-full rounded-lg px-3 py-2"></select>
+                </div>
+                <div>
+                  <label class="block text-[10px] text-muted uppercase font-bold mb-1">Responding Volunteer</label>
+                  <select id="vlVolunteerSelect" class="ui-input w-full rounded-lg px-3 py-2"></select>
+                </div>
+                <div>
+                  <label class="block text-[10px] text-muted uppercase font-bold mb-1">Delivered Quantity</label>
+                  <input id="vlDispatchQty" type="number" step="0.01" placeholder="Quantity to deliver" onkeydown="if(event.key==='Enter') volunteerSubmitDispatch()" class="ui-input w-full rounded-lg px-3 py-2" />
+                </div>
+                <div id="vlDispatchMsg" class="hidden p-2 rounded-lg text-xs font-semibold"></div>
+                <button id="btnVlDispatch" onclick="volunteerSubmitDispatch()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-xs transition">
+                  Commit Delivery Transaction
+                </button>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <h4 class="text-xs font-bold text-muted uppercase tracking-wider px-1">Recorded Delivery Log</h4>
+              <div id="volDistributionHistoryList" class="space-y-2"></div>
+            </div>
+          </div>
+
+          <!-- TAB: VOLUNTEER FULFILL REQUESTS -->
+          <div id="panel-vol-requests" class="hidden space-y-3">
+            <div class="space-y-2">
+              <div class="flex justify-between items-center px-1">
+                <h4 class="text-xs font-bold text-muted uppercase tracking-wider">Pending Citizen Requests</h4>
+                <span class="text-[10px] text-blue-500 font-semibold">Tap to Fulfill</span>
+              </div>
+              <div id="volPendingRequestsList" class="space-y-2"></div>
+            </div>
+          </div>
+
+          <!-- TAB: VOLUNTEER ROSTER -->
+          <div id="panel-vol-roster" class="hidden space-y-3">
+            <div class="ui-card border p-3.5 rounded-xl space-y-2.5">
+              <h3 class="text-xs font-bold uppercase tracking-wider">Register Volunteer Profile</h3>
+              <div class="space-y-2 text-xs">
+                <input id="vlRegName" placeholder="Full Name" onkeydown="if(event.key==='Enter') volunteerRegisterSelf()" class="ui-input w-full rounded-lg px-3 py-2" />
+                <div class="grid grid-cols-2 gap-2">
+                  <input id="vlRegPhone" placeholder="Mobile Number" onkeydown="if(event.key==='Enter') volunteerRegisterSelf()" class="ui-input w-full rounded-lg px-3 py-2" />
+                  <input id="vlRegSkill" placeholder="Skill (Medical, Driving, Boat)" onkeydown="if(event.key==='Enter') volunteerRegisterSelf()" class="ui-input w-full rounded-lg px-3 py-2" />
+                </div>
+                <select id="vlRegStatus" class="ui-input w-full rounded-lg px-3 py-2">
+                  <option value="Available">Available</option>
+                  <option value="Deployed">Deployed</option>
+                  <option value="On Leave">On Leave</option>
+                </select>
+                <div id="vlRegMsg" class="hidden p-2 rounded-lg text-xs font-semibold"></div>
+                <button id="btnVlRegister" onclick="volunteerRegisterSelf()" class="w-full py-2.5 btn-secondary border rounded-lg font-bold text-xs transition">
+                  Register as Volunteer
+                </button>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <h4 class="text-xs font-bold text-muted uppercase tracking-wider px-1">Active Volunteer Roster</h4>
+              <div id="volunteersList" class="space-y-2"></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ======================================================== -->
+        <!-- USER ROLE SECTION 4: COORDINATOR VIEW (FULL ADMIN)       -->
+        <!-- ======================================================== -->
+        <div id="role-container-coord" class="hidden space-y-3">
+          
+          <!-- TAB: COORD OVERVIEW -->
+          <div id="panel-coord-overview" class="space-y-3">
+            <div class="grid grid-cols-2 gap-2">
+              <div class="ui-card border p-3 rounded-xl">
+                <div class="text-[10px] text-muted uppercase font-semibold">Active Disasters</div>
+                <div id="kpi-events" class="text-2xl font-bold mt-0.5 text-rose-500">0</div>
+              </div>
+              <div class="ui-card border p-3 rounded-xl">
+                <div class="text-[10px] text-muted uppercase font-semibold">Safe Shelters</div>
+                <div id="kpi-shelters" class="text-2xl font-bold mt-0.5 text-blue-500">0</div>
+              </div>
+              <div class="ui-card border p-3 rounded-xl">
+                <div class="text-[10px] text-muted uppercase font-semibold">Pending Requests</div>
+                <div id="kpi-pending" class="text-2xl font-bold mt-0.5 text-amber-500">0</div>
+              </div>
+              <div class="ui-card border p-3 rounded-xl">
+                <div class="text-[10px] text-muted uppercase font-semibold">Total Delivered</div>
+                <div id="kpi-distributed" class="text-2xl font-bold mt-0.5 text-emerald-500">0</div>
+              </div>
+            </div>
+
+            <div class="ui-card border p-3.5 rounded-xl space-y-2">
+              <div class="flex justify-between items-center">
+                <h3 class="text-xs font-bold uppercase tracking-wider">Master Shelter Stock Summary</h3>
+                <span class="text-[10px] text-blue-500 font-semibold">Live SQL View</span>
+              </div>
+              <div id="coordSummaryList" class="space-y-2"></div>
+            </div>
+          </div>
+
+          <!-- TAB: COORD SHELTERS & DISASTERS -->
+          <div id="panel-coord-shelters" class="hidden space-y-3">
+            <!-- Add Shelter Form -->
+            <div class="ui-card border p-3.5 rounded-xl space-y-2.5">
+              <h3 class="text-xs font-bold uppercase tracking-wider">Open Safe Shelter</h3>
+              <div class="space-y-2 text-xs">
+                <select id="cdShEvent" class="ui-input w-full rounded-lg px-3 py-2"></select>
+                <input id="cdShLoc" placeholder="Shelter Facility Name & Area" class="ui-input w-full rounded-lg px-3 py-2" />
+                <div class="grid grid-cols-2 gap-2">
+                  <input id="cdShCap" type="number" placeholder="Total Bed Capacity" class="ui-input w-full rounded-lg px-3 py-2" />
+                  <input id="cdShOcc" type="number" placeholder="Current Occupancy" class="ui-input w-full rounded-lg px-3 py-2" />
+                </div>
+                <div id="cdShMsg" class="hidden p-2 rounded-lg text-xs font-semibold"></div>
+                <button onclick="coordCreateShelter()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-xs transition">
+                  Register Shelter Facility
+                </button>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <h4 class="text-xs font-bold text-muted uppercase tracking-wider px-1">Managed Shelters</h4>
+              <div id="coordSheltersList" class="space-y-2"></div>
+            </div>
+          </div>
+
+          <!-- TAB: COORD SUPPLIES -->
+          <div id="panel-coord-supplies" class="hidden space-y-3">
+            <div class="space-y-2">
+              <h4 class="text-xs font-bold text-muted uppercase tracking-wider px-1">Allocated Shelter Supplies</h4>
+              <div id="coordSuppliesList" class="space-y-2"></div>
+            </div>
+          </div>
+
+          <!-- TAB: COORD REQUESTS -->
+          <div id="panel-coord-requests" class="hidden space-y-3">
+            <div class="space-y-2">
+              <h4 class="text-xs font-bold text-muted uppercase tracking-wider px-1">All Emergency Requests</h4>
+              <div id="coordRequestsList" class="space-y-2"></div>
+            </div>
+          </div>
+
+          <!-- TAB: COORD REPORTS -->
+          <div id="panel-coord-reports" class="hidden space-y-3">
+            <div class="ui-card border p-3 rounded-xl space-y-2">
+              <h3 class="text-xs font-bold uppercase tracking-wider">ADBMS Analytical Queries & Execution Plan</h3>
+              <div class="grid grid-cols-2 gap-2 text-xs">
+                <button onclick="fetchReport('avg_resource', 'Average Stock per Resource')" class="btn-secondary border p-2.5 rounded-lg text-left font-semibold">
+                  Avg Stock
+                </button>
+                <button onclick="fetchReport('high_req_shelters', 'High-Demand Shelters (Subquery & Having)')" class="btn-secondary border p-2.5 rounded-lg text-left font-semibold">
+                  Needy Shelters
+                </button>
+                <button onclick="fetchReport('high_distributions', 'Above-Avg Deliveries (Nested Subquery)')" class="btn-secondary border p-2.5 rounded-lg text-left font-semibold">
+                  Major Dispatches
+                </button>
+                <button onclick="fetchReport('explain_join', 'Query Execution Plan (EXPLAIN 3-Table Join)')" class="btn-secondary border p-2.5 rounded-lg text-left font-semibold">
+                  Execution Plan
+                </button>
+              </div>
+            </div>
+
+            <div class="ui-card border p-3 rounded-xl space-y-2">
+              <h4 id="repHeader" class="text-xs font-bold">Select a query above</h4>
+              <div id="repBody" class="space-y-2 text-xs mono"></div>
+            </div>
+          </div>
+
+        </div>
+
+      </main>
+
+    </div>
+  </div>
+
+  <!-- ================= JAVASCRIPT CONTROLLER ================= -->
+  <script>
+    let STATE = {};
+    let CURRENT_ROLE = 'Citizen';
+    let CURRENT_USER = 'User';
+    let CURRENT_ACTIVE_TAB = '';
+
+    // Role-specific Tab Definitions
+    const ROLE_TABS = {
+      Donor: [
+        { id: 'donor-donate', label: 'Donate Supplies' },
+        { id: 'donor-history', label: 'All Stock' },
+        { id: 'donor-summary', label: 'Shelter Summary' }
+      ],
+      Citizen: [
+        { id: 'citizen-report', label: 'Report Incident' },
+        { id: 'citizen-shelters', label: 'Find Shelters' },
+        { id: 'citizen-request', label: 'Request Relief' }
+      ],
+      Volunteer: [
+        { id: 'vol-dispatch', label: 'Deliver Supplies' },
+        { id: 'vol-requests', label: 'Fulfill Requests' },
+        { id: 'vol-roster', label: 'Volunteer Roster' }
+      ],
+      Coordinator: [
+        { id: 'coord-overview', label: 'Overview' },
+        { id: 'coord-shelters', label: 'Shelters' },
+        { id: 'coord-supplies', label: 'Supplies' },
+        { id: 'coord-requests', label: 'Requests' },
+        { id: 'coord-reports', label: 'SQL Reports' }
+      ]
+    };
+
+    // ================= DATE NORMALIZATION =================
+    function normalizeDateInput(d) {
+      if (!d) {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      }
+      const s = String(d).trim();
+      const dmy = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+      if (dmy) return `${dmy[3]}-${dmy[2].padStart(2, '0')}-${dmy[1].padStart(2, '0')}`;
+      const ymd = s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+      if (ymd) return `${ymd[1]}-${ymd[2].padStart(2, '0')}-${ymd[3].padStart(2, '0')}`;
+      const dt = new Date(s);
+      if (!isNaN(dt.getTime())) {
+        return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+      }
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    }
+
+    // ================= THEME TOGGLE =================
+    function toggleTheme() {
+      const isDark = document.body.classList.contains('theme-dark');
+      if (isDark) {
+        document.body.classList.remove('theme-dark');
+        document.body.classList.add('theme-light');
+        document.getElementById('themeLabelLogin').textContent = 'Dark Theme';
+        document.getElementById('themeLabelApp').textContent = 'Dark';
+        localStorage.setItem('drrms_theme', 'light');
+      } else {
+        document.body.classList.remove('theme-light');
+        document.body.classList.add('theme-dark');
+        document.getElementById('themeLabelLogin').textContent = 'Light Theme';
+        document.getElementById('themeLabelApp').textContent = 'Light';
+        localStorage.setItem('drrms_theme', 'dark');
+      }
+    }
+
+    // ================= ROLE SWITCHER & ADAPTIVE TABS =================
+    function renderRoleTabs(role) {
+      const tabs = ROLE_TABS[role] || ROLE_TABS['Citizen'];
+      const bar = document.getElementById('dynamicTabBar');
+      
+      bar.innerHTML = tabs.map((t, idx) => `
+        <button onclick="setRoleTab('${t.id}')" id="tabbtn-${t.id}" class="nav-tab-btn ${idx === 0 ? 'active' : ''}">
+          ${t.label}
+        </button>
+      `).join('');
+
+      // Show the matching role container
+      ['donor', 'citizen', 'volunteer', 'coord'].forEach(r => {
+        const el = document.getElementById(`role-container-${r}`);
+        if (el) el.classList.add('hidden');
+      });
+
+      const roleKeyMap = { Donor: 'donor', Citizen: 'citizen', Volunteer: 'volunteer', Coordinator: 'coord' };
+      const activeContainer = document.getElementById(`role-container-${roleKeyMap[role] || 'citizen'}`);
+      if (activeContainer) activeContainer.classList.remove('hidden');
+
+      // Switch to first tab of role
+      setRoleTab(tabs[0].id);
+    }
+
+    function setRoleTab(tabId) {
+      CURRENT_ACTIVE_TAB = tabId;
+      
+      // Update Tab Button styles
+      const tabs = ROLE_TABS[CURRENT_ROLE] || [];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tabbtn-${t.id}`);
+        if (btn) btn.classList.toggle('active', t.id === tabId);
+        const panel = document.getElementById(`panel-${t.id}`);
+        if (panel) panel.classList.toggle('hidden', t.id !== tabId);
+      });
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function switchRole(newRole) {
+      CURRENT_ROLE = newRole;
+      document.getElementById('roleSwitcher').value = newRole;
+      
+      // Update saved session
+      try {
+        const saved = JSON.parse(localStorage.getItem('drrms_active_user') || '{}');
+        saved.role = newRole;
+        localStorage.setItem('drrms_active_user', JSON.stringify(saved));
+      } catch (_) {}
+
+      // If Donor, pre-fill donor input
+      if (newRole === 'Donor') {
+        const dIn = document.getElementById('dnDonorNameInput');
+        if (dIn && !dIn.value) dIn.value = CURRENT_USER;
+      }
+
+      renderRoleTabs(newRole);
+      showToast(`Switched to ${newRole} mode`);
+      loadAll();
+    }
+
+    // ================= USER LOGIN & LOGOUT =================
+    function handleUserLogin(e) {
+      e.preventDefault();
+      const name = document.getElementById('loginName').value.trim();
+      const phone = document.getElementById('loginPhone').value.trim();
+      const role = document.getElementById('loginRole').value;
+
+      if (!name) return alert('Please enter your name!');
+
+      CURRENT_USER = name;
+      CURRENT_ROLE = role;
+
+      document.getElementById('currentUserName').textContent = name;
+      document.getElementById('roleSwitcher').value = role;
+
+      try {
+        localStorage.setItem('drrms_active_user', JSON.stringify({ name, phone, role }));
+      } catch (_) {}
+
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('appScreen').classList.remove('hidden');
+
+      if (role === 'Donor') {
+        const dIn = document.getElementById('dnDonorNameInput');
+        if (dIn) dIn.value = name;
+      }
+
+      renderRoleTabs(role);
+      loadAll();
+    }
+
+    function logout() {
+      try {
+        localStorage.removeItem('drrms_active_user');
+      } catch (_) {}
+      document.getElementById('appScreen').classList.add('hidden');
+      document.getElementById('loginScreen').classList.remove('hidden');
+      const banner = document.getElementById('logoutBanner');
+      banner.classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showToast(msg, isError = false) {
+      const t = document.getElementById('toast');
+      const inner = document.getElementById('toastInner');
+      document.getElementById('toastText').textContent = msg;
+      inner.className = isError 
+        ? 'bg-rose-600 text-white px-3.5 py-2 rounded-xl text-xs font-semibold shadow-lg text-center'
+        : 'bg-emerald-600 text-white px-3.5 py-2 rounded-xl text-xs font-semibold shadow-lg text-center';
+      t.classList.remove('-translate-y-16', 'opacity-0');
+      setTimeout(() => t.classList.add('-translate-y-16', 'opacity-0'), 3000);
+    }
+
+    function showInlineMsg(elId, msg, isError = false) {
+      const el = document.getElementById(elId);
+      if (!el) return;
+      el.classList.remove('hidden');
+      el.className = isError 
+        ? 'p-2 rounded-lg text-xs font-semibold bg-rose-500/20 text-rose-500'
+        : 'p-2 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-500';
+      el.textContent = msg;
+      setTimeout(() => { if (el) el.classList.add('hidden'); }, 4000);
+    }
+
+    function logSql(sql) {
+      if (sql) document.getElementById('sqlCommand').textContent = sql;
+    }
+
+    function getVal(id) {
+      const el = document.getElementById(id);
+      return el ? el.value.trim() : '';
+    }
+
+    function clearInputs(...ids) {
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+    }
+
+    async function postJSON(url, body, method = 'POST') {
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const out = await res.json();
+        return { ok: res.ok, status: res.status, data: out };
+      } catch (err) {
+        return { ok: false, status: 0, data: { error: err.message } };
+      }
+    }
+
+    // ================= SEED & CLEAR DATA =================
+    async function seedSampleData() {
+      const btn = document.getElementById('btnSeedData');
+      btn.textContent = 'Loading...';
+      try {
+        const res = await fetch('/api/seed', { method: 'POST' });
+        const out = await res.json();
+        if (res.ok) {
+          logSql(out.sql);
+          showToast('Sample dummy data loaded across all 7 tables!');
+          await loadAll();
+        } else {
+          showToast(out.error || 'Failed to seed sample data', true);
+        }
+      } catch (err) {
+        showToast('Server error: ' + err.message, true);
+      } finally {
+        btn.textContent = 'Load Sample Data';
+      }
+    }
+
+    async function clearAllData() {
+      if (!confirm('This will wipe all records in the database so you can enter all your own data from scratch. Proceed?')) return;
+      const btn = document.getElementById('btnClearData');
+      btn.textContent = 'Clearing...';
+      try {
+        const res = await fetch('/api/clear', { method: 'POST' });
+        const out = await res.json();
+        if (res.ok) {
+          logSql(out.sql);
+          showToast('All records cleared! Database is clean for your data.');
+          await loadAll();
+        } else {
+          showToast(out.error || 'Failed to clear', true);
+        }
+      } catch (err) {
+        showToast('Server error: ' + err.message, true);
+      } finally {
+        btn.textContent = 'Clear All';
+      }
+    }
+
+    // ================= LOAD ALL DATA & POPULATE VIEWS =================
+    async function loadAll() {
+      try {
+        const res = await fetch('/api/bootstrap');
+        STATE = await res.json();
+        if (!STATE.events) return;
+
+        // Metrics for Coordinator
+        const evCount = STATE.events.length;
+        const shCount = STATE.shelters.length;
+        const reqPending = STATE.totals.pending_requests;
+        const totalDist = STATE.totals.total_distributed;
+
+        const kpiEv = document.getElementById('kpi-events');
+        if (kpiEv) kpiEv.textContent = evCount;
+        const kpiSh = document.getElementById('kpi-shelters');
+        if (kpiSh) kpiSh.textContent = shCount;
+        const kpiPe = document.getElementById('kpi-pending');
+        if (kpiPe) kpiPe.textContent = reqPending;
+        const kpiDi = document.getElementById('kpi-distributed');
+        if (kpiDi) kpiDi.textContent = totalDist;
+
+        // Shelter Dropdown Options
+        const shOpts = STATE.shelters.length 
+          ? STATE.shelters.map(s => `<option value="${s.shelter_id}">${s.location} (${s.current_occupancy}/${s.capacity} beds)</option>`).join('')
+          : '<option value="">No shelters available</option>';
+
+        // Disaster Event Options
+        const evOpts = STATE.events.length 
+          ? STATE.events.map(e => `<option value="${e.event_id}">${e.event_type} - ${e.location}</option>`).join('')
+          : '<option value="">No disasters recorded</option>';
+
+        // Volunteer Options
+        const vlOpts = STATE.volunteers.length 
+          ? STATE.volunteers.map(v => `<option value="${v.volunteer_id}">${v.volunteer_name} (${v.skill} - ${v.availability_status})</option>`).join('')
+          : '<option value="">No volunteers registered</option>';
+
+        // Resource Stock Options
+        const resOpts = STATE.resources.length 
+          ? STATE.resources.map(r => `<option value="${r.resource_id}">${r.resource_type} (${r.quantity} ${r.unit}) - ${r.shelter_name || 'Shelter'}</option>`).join('')
+          : '<option value="">No resources in stock</option>';
+
+        // Populate all Dropdowns
+        ['dnShelterSelect', 'ctReqShelter', 'cdShEvent'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.innerHTML = (id === 'cdShEvent' ? evOpts : shOpts);
+        });
+
+        const vlSelect = document.getElementById('vlVolunteerSelect');
+        if (vlSelect) vlSelect.innerHTML = vlOpts;
+
+        const resSelect = document.getElementById('vlResourceSelect');
+        if (resSelect) resSelect.innerHTML = resOpts;
+
+        // 1. POPULATE DONOR VIEWS
+        // A. Urgent requests that donors can fund
+        const donorUrgentList = document.getElementById('donorUrgentRequestsList');
+        if (donorUrgentList) {
+          const pending = STATE.requests.filter(r => r.request_status !== 'Fulfilled');
+          if (!pending.length) {
+            donorUrgentList.innerHTML = '<div class="text-xs text-muted p-2 text-center">No pending shelter requests right now. All demands fulfilled!</div>';
+          } else {
+            donorUrgentList.innerHTML = pending.map(r => `
+              <div class="ui-subcard border p-2.5 rounded-lg text-xs flex justify-between items-center">
+                <div>
+                  <div class="font-bold text-amber-500">${r.resource_type} (${r.quantity_requested} needed)</div>
+                  <div class="text-[11px] text-muted">Shelter: ${r.shelter_name} • ${r.remarks || 'Emergency'}</div>
+                </div>
+                <button onclick="prefillDonation('${r.resource_type}', ${r.quantity_requested}, ${r.shelter_id})" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[10px] font-bold">
+                  Donate This
+                </button>
+              </div>
+            `).join('');
+          }
+        }
+
+        // B. Donor Inventory / Supplies Stocked
+        const donorInv = document.getElementById('donorInventoryList');
+        if (donorInv) {
+          if (!STATE.resources.length) {
+            donorInv.innerHTML = '<div class="ui-card border p-3 rounded-xl text-xs text-muted text-center">No supplies in shelter inventory yet.</div>';
+          } else {
+            donorInv.innerHTML = STATE.resources.map(r => `
+              <div class="ui-card border p-3 rounded-xl space-y-1 text-xs">
+                <div class="flex justify-between items-center">
+                  <span class="font-bold">${r.resource_type}</span>
+                  <span class="mono text-emerald-500 font-bold">${r.quantity} ${r.unit}</span>
+                </div>
+                <div class="text-muted text-[11px]">Shelter: ${r.shelter_name || '-'} • Contributed by: ${r.donor_name || 'Anonymous Donor'} (${r.donor_type || 'NGO'})</div>
+              </div>
+            `).join('');
+          }
+        }
+
+        // C. Donor Summary & Coordinator Summary
+        const summaryHTML = !STATE.summaryView.length
+          ? '<div class="text-xs text-muted py-2 text-center">No shelter stock records yet. Stock supplies to see live summary.</div>'
+          : STATE.summaryView.map(v => `
+            <div class="ui-subcard border p-2.5 rounded-lg text-xs flex justify-between items-center">
+              <div>
+                <div class="font-bold">${v.shelter_name}</div>
+                <div class="text-[11px] text-muted">${v.disaster_event || '-'} • ${v.resource_type || 'No stock'}</div>
+              </div>
+              <div class="text-right mono">
+                <div class="text-emerald-500 font-bold">${v.available_quantity ?? 0} in stock</div>
+                <div class="text-[10px] text-muted">${v.distributed_quantity} distributed</div>
+              </div>
+            </div>
+          `).join('');
+
+        const dSum = document.getElementById('donorSummaryList');
+        if (dSum) dSum.innerHTML = summaryHTML;
+        const cdSum = document.getElementById('coordSummaryList');
+        if (cdSum) cdSum.innerHTML = summaryHTML;
+
+        // 2. POPULATE CITIZEN VIEWS
+        // A. Disasters
+        const ctDisList = document.getElementById('citizenDisasterList');
+        if (ctDisList) {
+          ctDisList.innerHTML = !STATE.events.length 
+            ? '<div class="ui-card border p-3 rounded-xl text-xs text-muted text-center">No active disaster incidents reported.</div>'
+            : STATE.events.map(e => `
+              <div class="ui-card border p-3 rounded-xl space-y-1 text-xs">
+                <div class="flex justify-between items-center">
+                  <span class="font-bold text-sm">${e.event_type}</span>
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold ${e.severity === 'Critical' ? 'bg-rose-500/20 text-rose-500' : 'bg-amber-500/20 text-amber-500'}">${e.severity}</span>
+                </div>
+                <div class="text-muted text-[11px]">Affected Area: ${e.location} • Date: ${e.start_date ? e.start_date.slice(0, 10) : ''}</div>
+              </div>
+            `).join('');
+        }
+
+        // B. Citizen Shelters with occupancy progress bar
+        const ctShList = document.getElementById('citizenShelterList');
+        const cdShList = document.getElementById('coordSheltersList');
+        const sheltersHTML = !STATE.shelters.length 
+          ? '<div class="ui-card border p-3 rounded-xl text-xs text-muted text-center">No safe shelters registered yet.</div>'
+          : STATE.shelters.map(s => {
+            const occPct = Math.min(100, Math.round((s.current_occupancy / (s.capacity || 1)) * 100));
+            return `
+              <div class="ui-card border p-3 rounded-xl space-y-2 text-xs">
+                <div class="flex justify-between items-center">
+                  <span class="font-bold text-sm">${s.location}</span>
+                  <span class="text-blue-500 font-semibold">${s.total_requests} aid requests</span>
+                </div>
+                <div class="space-y-1">
+                  <div class="flex justify-between text-[11px] text-muted">
+                    <span>Occupancy: ${s.current_occupancy} / ${s.capacity} beds</span>
+                    <span>${occPct}% Full</span>
+                  </div>
+                  <div class="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                    <div class="h-full ${occPct > 85 ? 'bg-rose-500' : 'bg-blue-500'}" style="width: ${occPct}%"></div>
+                  </div>
+                </div>
+                ${CURRENT_ROLE === 'Coordinator' ? `
+                  <div class="pt-2 flex justify-between items-center border-t border-slate-700/50">
+                    <div class="flex items-center gap-1.5">
+                      <input id="occ-${s.shelter_id}" type="number" value="${s.current_occupancy}" class="ui-input w-16 rounded px-2 py-1 text-xs" />
+                      <button onclick="coordUpdateOccupancy(${s.shelter_id})" class="px-2 py-1 bg-blue-600 text-white rounded text-xs font-semibold">Update</button>
+                    </div>
+                    <button onclick="coordDeleteShelter(${s.shelter_id})" class="text-rose-500 text-xs font-semibold">Delete</button>
+                  </div>
+                ` : ''}
+              </div>
+            `;
+          }).join('');
+
+        if (ctShList) ctShList.innerHTML = sheltersHTML;
+        if (cdShList) cdShList.innerHTML = sheltersHTML;
+
+        // C. Citizen My Requests & Volunteer/Coordinator Requests
+        const ctReqList = document.getElementById('citizenMyRequestsList');
+        const vlReqList = document.getElementById('volPendingRequestsList');
+        const cdReqList = document.getElementById('coordRequestsList');
+
+        const requestsHTML = !STATE.requests.length
+          ? '<div class="ui-card border p-3 rounded-xl text-xs text-muted text-center">No relief requests raised yet.</div>'
+          : STATE.requests.map(req => `
+            <div class="ui-card border p-3 rounded-xl space-y-2 text-xs">
+              <div class="flex justify-between items-center">
+                <span class="font-bold">${req.resource_type} (${req.quantity_requested})</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${req.request_status === 'Fulfilled' ? 'bg-emerald-500/20 text-emerald-500' : 'bg-amber-500/20 text-amber-500'}">
+                  ${req.request_status}
+                </span>
+              </div>
+              <div class="text-muted text-[11px]">Shelter: ${req.shelter_name} • ${req.fulfilled_date ? `Fulfilled on: ${req.fulfilled_date.slice(0, 10)}` : 'Pending (NULL)'}</div>
+              ${req.remarks ? `<div class="text-muted text-[11px] italic">"${req.remarks}"</div>` : ''}
+              <div class="pt-1.5 flex justify-end gap-2 border-t border-slate-700/50">
+                ${req.request_status !== 'Fulfilled' ? `
+                  <button onclick="markRequestFulfilled(${req.request_id})" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-semibold">Mark Fulfilled</button>
+                ` : ''}
+                ${CURRENT_ROLE === 'Coordinator' ? `
+                  <button onclick="coordDeleteRequest(${req.request_id})" class="text-rose-500 text-xs font-semibold">Delete</button>
+                ` : ''}
+              </div>
+            </div>
+          `).join('');
+
+        if (ctReqList) ctReqList.innerHTML = requestsHTML;
+        if (vlReqList) vlReqList.innerHTML = requestsHTML;
+        if (cdReqList) cdReqList.innerHTML = requestsHTML;
+
+        // 3. POPULATE VOLUNTEER VIEWS
+        // Distributions
+        const distHTML = !STATE.distributions.length
+          ? '<div class="ui-card border p-3 rounded-xl text-xs text-muted text-center">No supply deliveries recorded yet.</div>'
+          : STATE.distributions.map(d => `
+            <div class="ui-card border p-3 rounded-xl space-y-1 text-xs">
+              <div class="flex justify-between items-center">
+                <span class="font-bold">${d.resource_type}</span>
+                <span class="mono text-emerald-500 font-bold">${d.distributed_qty} delivered</span>
+              </div>
+              <div class="text-muted text-[11px]">Volunteer: ${d.volunteer_name} • Shelter: ${d.shelter_name || '-'}</div>
+              <div class="text-muted text-[10px] mono">${d.distributed_at ? new Date(d.distributed_at).toLocaleString() : ''}</div>
+            </div>
+          `).join('');
+
+        const vlDist = document.getElementById('volDistributionHistoryList');
+        if (vlDist) vlDist.innerHTML = distHTML;
+
+        // Volunteer Roster
+        const vlRoster = document.getElementById('volunteersList');
+        if (vlRoster) {
+          vlRoster.innerHTML = !STATE.volunteers.length
+            ? '<div class="ui-card border p-3 rounded-xl text-xs text-muted text-center">No volunteers registered yet.</div>'
+            : STATE.volunteers.map(v => `
+              <div class="ui-card border p-2.5 rounded-xl flex justify-between items-center text-xs">
+                <div>
+                  <div class="font-bold">${v.volunteer_name}</div>
+                  <div class="text-[11px] text-muted">Skill: ${v.skill} • Phone: ${v.phone}</div>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${v.availability_status === 'Available' ? 'bg-emerald-500/20 text-emerald-500' : 'bg-blue-500/20 text-blue-500'}">
+                  ${v.availability_status}
+                </span>
+              </div>
+            `).join('');
+        }
+
+        // Coordinator Supplies
+        const cdSupplies = document.getElementById('coordSuppliesList');
+        if (cdSupplies) cdSupplies.innerHTML = donorInv ? donorInv.innerHTML : '';
+
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // ================= 1. DONOR SPECIFIC ACTIONS =================
+    function prefillDonation(item, qty, shelterId) {
+      document.getElementById('dnItemName').value = item;
+      document.getElementById('dnItemQty').value = qty || 100;
+      if (shelterId) document.getElementById('dnShelterSelect').value = shelterId;
+      setRoleTab('donor-donate');
+      showToast(`Selected "${item}" to donate!`);
+      document.getElementById('dnItemQty').focus();
+    }
+
+    async function submitDonorContribution() {
+      const item = getVal('dnItemName');
+      const qty = parseFloat(getVal('dnItemQty')) || 100;
+      const unit = getVal('dnItemUnit') || 'Units';
+      const shelter = getVal('dnShelterSelect');
+      const donorName = getVal('dnDonorNameInput') || CURRENT_USER;
+      const donorType = getVal('dnDonorTypeInput') || 'Individual';
+
+      if (!item) {
+        showInlineMsg('dnContributeMsg', 'Please enter resource item to donate!', true);
+        return;
+      }
+
+      const btn = document.getElementById('btnSubmitDonation');
+      btn.disabled = true;
+      btn.textContent = 'Stocking Donation...';
+
+      const res = await postJSON('/api/donate', {
+        donor_name: donorName,
+        donor_type: donorType,
+        shelter_id: shelter || undefined,
+        resource_type: item,
+        quantity: qty,
+        unit: unit
+      });
+
+      btn.disabled = false;
+      btn.textContent = 'Confirm & Stock Donation';
+
+      if (res.ok) {
+        logSql(res.data.sql);
+        showInlineMsg('dnContributeMsg', `Thank you! ${qty} ${unit} of ${item} stocked successfully.`);
+        showToast('Donation recorded & stocked!');
+        clearInputs('dnItemName', 'dnItemQty', 'dnItemUnit');
+        await loadAll();
+      } else {
+        const errMsg = res.data && res.data.error ? res.data.error : 'Failed to record donation';
+        showInlineMsg('dnContributeMsg', errMsg, true);
+        showToast(errMsg, true);
+      }
+    }
+
+    // ================= 2. CITIZEN SPECIFIC ACTIONS =================
+    async function citizenReportDisaster() {
+      const type = getVal('ctDisasterType');
+      const loc = getVal('ctDisasterLoc');
+      if (!type || !loc) {
+        showInlineMsg('ctDisasterMsg', 'Please enter disaster incident type and affected area!', true);
+        return;
+      }
+
+      const btn = document.getElementById('btnCtReport');
+      btn.disabled = true;
+      btn.textContent = 'Submitting...';
+
+      const res = await postJSON('/api/events', {
+        event_type: type,
+        location: loc,
+        start_date: normalizeDateInput(getVal('ctDisasterDate')),
+        severity: getVal('ctDisasterSev') || 'High'
+      });
+
+      btn.disabled = false;
+      btn.textContent = 'Submit Disaster Incident';
+
+      if (res.ok) {
+        logSql(res.data.sql);
+        showInlineMsg('ctDisasterMsg', 'Incident reported! Emergency response notified.');
+        showToast('Disaster incident reported!');
+        clearInputs('ctDisasterType', 'ctDisasterLoc');
+        await loadAll();
+      } else {
+        const errMsg = res.data && res.data.error ? res.data.error : 'Failed to report';
+        showInlineMsg('ctDisasterMsg', errMsg, true);
+        showToast(errMsg, true);
+      }
+    }
+
+    async function citizenRaiseRequest() {
+      const item = getVal('ctReqItem');
+      const qty = parseFloat(getVal('ctReqQty')) || 50;
+      const shelter = getVal('ctReqShelter');
+      if (!item) {
+        showInlineMsg('ctReqMsg', 'Please specify relief item needed!', true);
+        return;
+      }
+
+      const btn = document.getElementById('btnCtRequest');
+      btn.disabled = true;
+      btn.textContent = 'Submitting...';
+
+      const res = await postJSON('/api/requests', {
+        shelter_id: shelter || undefined,
+        resource_type: item,
+        quantity_requested: qty,
+        remarks: getVal('ctReqRemarks') || 'Citizen request'
+      });
+
+      btn.disabled = false;
+      btn.textContent = 'Submit Emergency Request';
+
+      if (res.ok) {
+        logSql(res.data.sql);
+        showInlineMsg('ctReqMsg', 'Request registered in shelter queue!');
+        showToast('Emergency request submitted!');
+        clearInputs('ctReqItem', 'ctReqQty', 'ctReqRemarks');
+        await loadAll();
+      } else {
+        const errMsg = res.data && res.data.error ? res.data.error : 'Failed to submit request';
+        showInlineMsg('ctReqMsg', errMsg, true);
+        showToast(errMsg, true);
+      }
+    }
+
+    // ================= 3. VOLUNTEER SPECIFIC ACTIONS =================
+    async function volunteerSubmitDispatch() {
+      const resId = getVal('vlResourceSelect');
+      const volId = getVal('vlVolunteerSelect');
+      const qty = parseFloat(getVal('vlDispatchQty')) || 10;
+      if (!resId || !volId) {
+        showInlineMsg('vlDispatchMsg', 'Select available resource stock and volunteer!', true);
+        return;
+      }
+
+      const btn = document.getElementById('btnVlDispatch');
+      btn.disabled = true;
+      btn.textContent = 'Executing Transaction...';
+
+      const res = await fetch('/api/distribute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resource_id: resId, volunteer_id: volId, distributed_qty: qty })
+      });
+      const out = await res.json();
+
+      btn.disabled = false;
+      btn.textContent = 'Commit Delivery Transaction';
+
+      logSql(out.sql);
+      if (res.ok) {
+        showInlineMsg('vlDispatchMsg', 'Delivery committed and shelter stock updated via stored procedure!');
+        showToast('Supplies delivered successfully!');
+        clearInputs('vlDispatchQty');
+        await loadAll();
+      } else {
+        showInlineMsg('vlDispatchMsg', `Transaction Rolled Back: ${out.error || 'Insufficient stock'}`, true);
+        showToast(out.error || 'Distribution failed', true);
+      }
+    }
+
+    async function markRequestFulfilled(id) {
+      const res = await postJSON(`/api/requests/${id}/fulfill`, {}, 'PUT');
+      if (res.ok) {
+        logSql(res.data.sql);
+        showToast('Request marked fulfilled!');
+        await loadAll();
+      } else {
+        showToast(res.data.error || 'Failed to fulfill request', true);
+      }
+    }
+
+    async function volunteerRegisterSelf() {
+      const name = getVal('vlRegName');
+      if (!name) {
+        showInlineMsg('vlRegMsg', 'Please enter volunteer full name!', true);
+        return;
+      }
+
+      const btn = document.getElementById('btnVlRegister');
+      btn.disabled = true;
+      btn.textContent = 'Registering...';
+
+      const res = await postJSON('/api/volunteers', {
+        volunteer_name: name,
+        phone: getVal('vlRegPhone') || '9847000000',
+        skill: getVal('vlRegSkill') || 'General Relief Response',
+        availability_status: getVal('vlRegStatus') || 'Available'
+      });
+
+      btn.disabled = false;
+      btn.textContent = 'Register as Volunteer';
+
+      if (res.ok) {
+        logSql(res.data.sql);
+        showInlineMsg('vlRegMsg', 'Volunteer profile created!');
+        showToast('Volunteer registered!');
+        clearInputs('vlRegName', 'vlRegPhone', 'vlRegSkill');
+        await loadAll();
+      } else {
+        showInlineMsg('vlRegMsg', res.data.error || 'Failed to register', true);
+        showToast(res.data.error || 'Failed to register', true);
+      }
+    }
+
+    // ================= 4. COORDINATOR SPECIFIC ACTIONS =================
+    async function coordCreateShelter() {
+      const loc = getVal('cdShLoc');
+      const ev = getVal('cdShEvent');
+      if (!loc) {
+        showInlineMsg('cdShMsg', 'Please enter shelter facility name!', true);
+        return;
+      }
+
+      const res = await postJSON('/api/shelters', {
+        event_id: ev || undefined,
+        location: loc,
+        capacity: parseInt(getVal('cdShCap')) || 250,
+        current_occupancy: parseInt(getVal('cdShOcc')) || 0
+      });
+
+      if (res.ok) {
+        logSql(res.data.sql);
+        showInlineMsg('cdShMsg', 'Shelter facility opened!');
+        showToast('Shelter registered!');
+        clearInputs('cdShLoc', 'cdShCap', 'cdShOcc');
+        await loadAll();
+      } else {
+        showInlineMsg('cdShMsg', res.data.error || 'Failed to open shelter', true);
+      }
+    }
+
+    async function coordUpdateOccupancy(id) {
+      const occ = document.getElementById(`occ-${id}`).value;
+      const res = await postJSON(`/api/shelters/${id}`, { current_occupancy: parseInt(occ) || 0 }, 'PUT');
+      if (res.ok) {
+        logSql(res.data.sql);
+        showToast('Occupancy updated!');
+        await loadAll();
+      } else {
+        showToast(res.data.error || 'Failed to update', true);
+      }
+    }
+
+    async function coordDeleteShelter(id) {
+      if (!confirm('Delete shelter facility?')) return;
+      const res = await fetch(`/api/shelters/${id}?cascade=true`, { method: 'DELETE' });
+      const out = await res.json();
+      logSql(out.sql);
+      showToast('Shelter deleted.');
+      await loadAll();
+    }
+
+    async function coordDeleteRequest(id) {
+      if (!confirm('Delete request?')) return;
+      const res = await postJSON(`/api/requests/${id}`, {}, 'DELETE');
+      if (res.ok) {
+        logSql(res.data.sql);
+        showToast('Request deleted.');
+        await loadAll();
+      }
+    }
+
+    // ================= 5. ANALYTICAL REPORTS & EXPLAIN =================
+    async function fetchReport(type, title) {
+      try {
+        const res = await fetch(`/api/reports/${type}`);
+        const out = await res.json();
+        logSql(out.sql);
+        document.getElementById('repHeader').textContent = title;
+        const rows = out.rows || [];
+        const cont = document.getElementById('repBody');
+        if (!rows.length) {
+          cont.innerHTML = '<div class="text-muted p-2 text-center">No records found for this query</div>';
+          return;
+        }
+        cont.innerHTML = rows.map((r, i) => `
+          <div class="ui-subcard border p-2.5 rounded-lg space-y-1">
+            <div class="font-bold text-muted text-[11px]">Record #${i + 1}</div>
+            ${Object.entries(r).map(([k, v]) => `
+              <div class="flex justify-between text-[11px]">
+                <span class="text-muted">${k}:</span>
+                <span class="font-semibold">${v ?? 'NULL'}</span>
+              </div>
+            `).join('')}
+          </div>
+        `).join('');
+      } catch (err) {
+        showToast('Failed to load report: ' + err.message, true);
+      }
+    }
+
+    // ================= INITIALIZE APPLICATION =================
+    document.addEventListener('DOMContentLoaded', () => {
+      // Set default date
+      const today = new Date();
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      const ctDate = document.getElementById('ctDisasterDate');
+      if (ctDate) ctDate.value = todayStr;
+
+      // Theme initialization
+      const savedTheme = localStorage.getItem('drrms_theme') || 'dark';
+      if (savedTheme === 'light') {
+        document.body.classList.remove('theme-dark');
+        document.body.classList.add('theme-light');
+        document.getElementById('themeLabelLogin').textContent = 'Dark Theme';
+        document.getElementById('themeLabelApp').textContent = 'Dark';
+      } else {
+        document.body.classList.remove('theme-light');
+        document.body.classList.add('theme-dark');
+        document.getElementById('themeLabelLogin').textContent = 'Light Theme';
+        document.getElementById('themeLabelApp').textContent = 'Light';
+      }
+
+      // Check existing user session
+      let savedUser = null;
+      try {
+        savedUser = JSON.parse(localStorage.getItem('drrms_active_user'));
+      } catch (_) {}
+
+      if (savedUser && savedUser.name) {
+        CURRENT_USER = savedUser.name;
+        CURRENT_ROLE = savedUser.role || 'Citizen';
+
+        document.getElementById('currentUserName').textContent = savedUser.name;
+        document.getElementById('roleSwitcher').value = CURRENT_ROLE;
+
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('appScreen').classList.remove('hidden');
+
+        if (CURRENT_ROLE === 'Donor') {
+          const dIn = document.getElementById('dnDonorNameInput');
+          if (dIn) dIn.value = CURRENT_USER;
+        }
+
+        renderRoleTabs(CURRENT_ROLE);
+        loadAll();
+      } else {
+        document.getElementById('loginScreen').classList.remove('hidden');
+        document.getElementById('appScreen').classList.add('hidden');
+      }
+    });
+  </script>
+</body>
+</html>
